@@ -64,7 +64,7 @@ var xMax = 0
 var yMin = 0
 var yMax = 0
 
-File("day2318_puzzle_input.txt").forEachLine {
+File("day2223_puzzle_input.txt").forEachLine {
     it.forEach {
         if (it == '#') {
             elvePos.add(x.toString()+","+y.toString())
@@ -116,6 +116,8 @@ var swap = ruleSet[0]
 ruleSet.add(swap)
 ruleSet.removeAt(0)
 
+}
+
 elvePos.forEach{
     if (it.split(",")[0].toInt() < xMin) xMin = it.split(",")[0].toInt()
     else if (it.split(",")[0].toInt() > xMax) xMax = it.split(",")[0].toInt()
@@ -123,14 +125,13 @@ elvePos.forEach{
     else if (it.split(",")[1].toInt() > yMax) yMax = it.split(",")[1].toInt()
 }
 
-//for (yy in yMin..yMax) {
-//    for (xx in xMin..xMax) {
-//        if (elvePos.binarySearch((xx).toString()+","+(yy).toString()) >= 0) print("#") else print(".")
-//    }
-//    println()
-//}
-//println()
+for (yy in yMin..yMax) {
+    for (xx in xMin..xMax) {
+        if (elvePos.binarySearch((xx).toString()+","+(yy).toString()) >= 0) print("#") else print(".")
+    }
+    println()
 }
+println()
 
 println("$xMax, $xMin, $yMax, $yMin, ${elvePos.size}")
 return (xMax-xMin+1) * (yMax-yMin+1) - elvePos.size
@@ -143,7 +144,7 @@ fun main() {
 println("--- Day 23: Unstable Diffusion ---")
 
 var solution1 = diffusion()
-println("   the rectangle contains $solution1 empty tiles")
+println("   the rectangle contains $solution1 empty tiles")  // 241 is to low  //4246 is to high
    
 t1 = System.currentTimeMillis() - t1
 println("puzzle solved in ${t1} ms")
