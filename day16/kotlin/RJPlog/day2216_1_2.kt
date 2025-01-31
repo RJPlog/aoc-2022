@@ -6,31 +6,31 @@ import java.io.File
 var roads = mutableMapOf<String, Int>()
 var pumps = mutableMapOf<String, Int>()
 
-fun move3(sI: String, eI: String, crossings: MutableMap<String, Int>): Int {
-    var result = mutableListOf(0)
-    for((key, value) in crossings) {
-        if (key.split("-")[0] == sI || key.split("-")[1] == sI) {
-            if (key.split("-")[0] == eI || key.split("-")[1] == eI) {
-                result.add(value)
-            } else {
-                var nextsI = key.split("-")[0]
-                if (key.split("-")[0] == sI) nextsI = key.split("-")[1]
-                var newCrossings = mutableMapOf<String, Int>()
-                for ((key,value) in crossings) {
-                    if (!key.split("-").contains(sI))
-                    newCrossings.put(key, value)
-                }
-                result.add(value + move3(nextsI, eI, newCrossings))
-            }
+fun move(sC: String, tL: Int, pumps: MutableMap<String, Int>): Int { 
+    //println("${" ".repeat(30-tL)} $sC")
+    var pressure = mutableListOf(0)
+    if (tL <= 0 || pumps.values.sum() == 0) {
+        return 0
+    } else { 
+        for ((key, value) in roads) {
+            var pumpsLocal = mutableMapOf<String, Int>()
+            pumpsLocal.putAll(pumps)
+            pressure.add(move(key.takeLast(2), tL-1, pumpsLocal))
+            if (pumps.getValue(sC) > 0) {
+                var pumpsLocal = mutableMapOf<String, Int>()
+                pumpsLocal.putAll(pumps)
+                pumpsLocal.put(sC, 0)
+                pressure.add(pumps.getValue(sC)*(tL-1) + move(key.takeLast(2), tL-2, pumpsLocal)) 
+            } 
+
+            //if (pumps.getValue(sC)>0) println(" at $tL: pump $sC adds ${pumps.getValue(sC) * tL} pressure")
         }
     }
-    result.sortDescending()
-    return result[0]
+    pressure.sortDescending()
+    return pressure[0]
 }
 
 fun aocDay2216(part: Int = 1): Int {
-    var result = 0
-
     // #1 prepare map of roads
     // #1.1.1 extract all connections
     // #1.1.2 extract all flow rates
@@ -43,9 +43,7 @@ fun aocDay2216(part: Int = 1): Int {
             junctions.add(listOf(junctOne, junctTwo).sorted().joinToString("-"))
         }
         val flowRate = it.substringAfter("rate=").substringBefore(";").toInt()
-        if (flowRate > 0) {
-            pumps.put(junctOne, flowRate)
-        }
+        pumps.put(junctOne, flowRate)
     }
     junctions = junctions.distinct().sorted().toMutableList()
     var allRoads = mutableMapOf<String, Int>()
@@ -62,22 +60,16 @@ fun aocDay2216(part: Int = 1): Int {
     println(pumps)
 
     val startCave = "AA"
-    val timeLimit = 30
+    val timeLimit = 9
 
     // #2 evaluate 
-
-    /* 
-    val endIndex = Pair(pI.lastIndexOf(".") % w, pI.lastIndexOf(".") / w)
-
     var result = 0
     if (part == 1) {
-        result = move(startIndex, 'd', endIndex, junctions, 1, pI.indexOf("."), 0, w )
+        // #2.1 calculate result für part1
+        result = move(startCave, timeLimit, pumps)
     } else {
-        var roadsPart2 = mutableMapOf<String, Int>()
-        roadsPart2.putAll(roads)
-        result = move3(pI.indexOf(".").toString(), pI.lastIndexOf(".").toString(), roadsPart2)
+        // part 2
     } 
-        */
 
     return result
 }
@@ -89,7 +81,7 @@ fun main() {
     println("--- Day 16: Proboscidea Volcanium ---")
 
     var solution1 = aocDay2216(1)
-    println("   the longest hike is $solution1 steps long")
+    println("   the most pressure you can release is $solution1")
 
     //var solution2 = aocDay2216(2)
     //println("   the longest hike is $solution2 steps long")
