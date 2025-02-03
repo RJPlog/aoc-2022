@@ -48,14 +48,14 @@ fun move2(currCave: String, tL: Int, pumpsInt: MutableMap<String, Int>, pr: Int,
     if (pumpsInt.getValue(currCave) > 0) {
         tLNew = tL-1
         pressureContribution += pumpsInt.getValue(currCave) * max((tLNew),0)
-        println("$tLNew, $pressureContribution")
+      //  println("$tLNew, $pressureContribution")
     } 
 
     var pumpsLocal = mutableMapOf<String, Int>()
     pumpsLocal.putAll(pumpsInt)
     pumpsLocal.remove(currCave)
 
-    println("--- $pumpsLocal")
+    //println("--- $pumpsLocal")
 
     if (tL <= 0 || pumpsLocal.values.sum() == 0) {
         println("time out/ all pumps open: $pressureContribution, $path")
@@ -70,28 +70,6 @@ fun move2(currCave: String, tL: Int, pumpsInt: MutableMap<String, Int>, pr: Int,
     pressure.sortDescending()
     return pressure[0]
 }
-
-/*fun move2(sC: String, tL: Int, pumpsInt: MutableMap<String, Int>, pr: Int, path: String): Int { 
-    var pressure = mutableListOf(0)
-    if (tL < 1 || pumpsInt.values.sum() == 0) {
-        println("$tL, $pr, $path")
-        pressure.add(pr)
-    } else { 
-        for ((key, value) in pumpsInt) {
-            if (value > 0 && key != sC) {
-                var pumpsLocal = mutableMapOf<String, Int>()
-                pumpsLocal.putAll(pumps)
-                pumpsLocal.put(sC, 0)
-                pressure.add(move2(key, tL-reducedRoads.getValue(sC+"-"+key), pumpsLocal, pr + (tL-1) * value, path+"-"+key)) 
-            } 
-
-            //if (pumps.getValue(sC)>0) println(" at $tL: pump $sC adds ${pumps.getValue(sC) * tL} pressure")
-        }
-    }
-    pressure.sortDescending()
-    return pressure[0]
-} */
-
 
 
 fun aocDay2216(part: Int = 1): Int {
@@ -121,16 +99,31 @@ fun aocDay2216(part: Int = 1): Int {
     // #1.2 make roadmap global
         roads.putAll(allRoads)
 
+    // guess it makes sence to sort out sinlge connections upfront?    
+
     // #1.3 determine shortest ways from entry to pumps with positive flow rate and from each pump to pump
+    var i = 0
     for ((key1,value1) in pumps) {
         if (key1 == "AA" || value1 > 0) {
+            print(key1)
+            print("-")
             for ((key2,value2) in pumps) {
                 if (key2 == "AA" || value2 > 0) {
                     if ((key1 != key2)) {
+
+                        if (reducedRoads.containsKey(key2+"-"+key1)) {
+                            reducedRoads.put(key1+"-"+key2, reducedRoads.getValue(key2+"-"+key1))
+                        } else if (reducedRoads.containsKey(key1+"-"+key2)) {
+                            reducedRoads.put(key2+"-"+key1, reducedRoads.getValue(key1+"-"+key2))
+                        } else {
+                            println(key2)
                         reduceRoads(key1, key1, key2, roads, 1)
+                        }
                     }
                 }
             }
+            i += 1
+            println(i)
         }
     }
     println("reducedRoads")
@@ -150,16 +143,8 @@ fun aocDay2216(part: Int = 1): Int {
         }
     }
 
-    //pumpsRed.remove("BB")
-    //pumpsRed.remove("CC")
-    //pumpsRed.remove("EE")
-    //pumpsRed.remove("HH")
-    //pumpsRed.remove("JJ")
-
     println("pumpsRed")
     println (pumpsRed)
-
-    
 
 
     val startCave = "AA"
@@ -170,18 +155,6 @@ fun aocDay2216(part: Int = 1): Int {
     if (part == 1) {
         result = move2(startCave, timeLimit+1, pumpsRed, pressure, startCave)
     }  
-
-    // or complete diffent approach, determine way from all pumps to all others. 
-    // run loops number of pump times and calculate possible pressure, skip all combinations which have no direct connect.
-
-
-
-
-
-
-
-    // #2 evaluate 
-
 
 
     return result
@@ -201,29 +174,4 @@ fun main() {
 
     t1 = System.currentTimeMillis() - t1
     println("puzzle solved in ${t1} ms")
-}
-
-
-fun move(sC: String, tL: Int, pumps: MutableMap<String, Int>): Int { 
-    //println("${" ".repeat(30-tL)} $sC")
-    var pressure = mutableListOf(0)
-    if (tL <= 0 || pumps.values.sum() == 0) {
-        return 0
-    } else { 
-        for ((key, value) in roads) {
-            var pumpsLocal = mutableMapOf<String, Int>()
-            pumpsLocal.putAll(pumps)
-            pressure.add(move(key.takeLast(2), tL-1, pumpsLocal))
-            if (pumps.getValue(sC) > 0) {
-                var pumpsLocal = mutableMapOf<String, Int>()
-                pumpsLocal.putAll(pumps)
-                pumpsLocal.put(sC, 0)
-                pressure.add(pumps.getValue(sC)*(tL-1) + move(key.takeLast(2), tL-2, pumpsLocal)) 
-            } 
-
-            //if (pumps.getValue(sC)>0) println(" at $tL: pump $sC adds ${pumps.getValue(sC) * tL} pressure")
-        }
-    }
-    pressure.sortDescending()
-    return pressure[0]
 }
