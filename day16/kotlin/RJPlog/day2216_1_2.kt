@@ -126,18 +126,45 @@ fun aocDay2216(part: Int = 1): Int {
     var timeLimit = 30
     var result = 0
     var pressure = 0
+    var resultMax = 0
 
     if (part == 1) {
         result = move2(startCave, timeLimit+1, pumpsRed, pressure, startCave)
     }  else {
         // #2 part 2
+
+        timeLimit = 26
+        println()
+        println("---------part2------------")
+        pumpsRed.remove("AA")
+
         // #2.1 separate reduced pump list to elefant pumps and your pumps
         // #2.2 calculate your and the elefants contribtution and take the max value
-        timeLimit = 26
-        result = 0
+        for (i in 0..2.toDouble().pow(pumpsRed.size).toInt()) {
+            var pumpsMe = mutableMapOf<String, Int>()
+            pumpsMe.put("AA", 0)
+            var pumpsEl = mutableMapOf<String, Int>()
+            pumpsEl.put("AA", 0)
+            var shedule = i.toString(2).padStart(pumpsRed.size,'0')
+            var j = 0
+            println(shedule)
+            println(pumpsRed)
+            for ((key, value) in pumpsRed) {
+                if(shedule[j] == '1') {
+                    pumpsMe.put(key, value)
+                } else {
+                    pumpsEl.put(key, value)
+                }
+                j += 1
+            }
+            result = move2(startCave, timeLimit+1, pumpsMe, pressure, startCave) + move2(startCave, timeLimit+1, pumpsEl, pressure, startCave)
+ 
+            if (resultMax < result) resultMax = result
+            println("$i:  $pumpsMe $pumpsEl -> $result -> $resultMax")
+        }
     }
 
-    return result
+    return resultMax
 }   
 
 fun main() {
