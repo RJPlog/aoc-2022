@@ -48,17 +48,13 @@ fun move2(currCave: String, tL: Int, pumpsInt: MutableMap<String, Int>, pr: Int,
     if (pumpsInt.getValue(currCave) > 0) {
         tLNew = tL-1
         pressureContribution += pumpsInt.getValue(currCave) * max((tLNew),0)
-      //  println("$tLNew, $pressureContribution")
     } 
 
     var pumpsLocal = mutableMapOf<String, Int>()
     pumpsLocal.putAll(pumpsInt)
     pumpsLocal.remove(currCave)
 
-    //println("--- $pumpsLocal")
-
     if (tL <= 0 || pumpsLocal.values.sum() == 0) {
-        println("time out/ all pumps open: $pressureContribution, $path")
         pressure.add(pressureContribution)
     } else {
         for ((key,value) in pumpsLocal) {
@@ -70,7 +66,6 @@ fun move2(currCave: String, tL: Int, pumpsInt: MutableMap<String, Int>, pr: Int,
     pressure.sortDescending()
     return pressure[0]
 }
-
 
 fun aocDay2216(part: Int = 1): Int {
     // #1 prepare map of roads
@@ -93,8 +88,6 @@ fun aocDay2216(part: Int = 1): Int {
     junctions.forEach{
         allRoads.put(it, 1)
     }
-    println("allRoads")
-    println(allRoads)
 
     // #1.2 make roadmap global
         roads.putAll(allRoads)
@@ -102,11 +95,8 @@ fun aocDay2216(part: Int = 1): Int {
     // guess it makes sence to sort out sinlge connections upfront?    
 
     // #1.3 determine shortest ways from entry to pumps with positive flow rate and from each pump to pump
-    var i = 0
     for ((key1,value1) in pumps) {
         if (key1 == "AA" || value1 > 0) {
-            print(key1)
-            print("-")
             for ((key2,value2) in pumps) {
                 if (key2 == "AA" || value2 > 0) {
                     if ((key1 != key2)) {
@@ -116,24 +106,13 @@ fun aocDay2216(part: Int = 1): Int {
                         } else if (reducedRoads.containsKey(key1+"-"+key2)) {
                             reducedRoads.put(key2+"-"+key1, reducedRoads.getValue(key1+"-"+key2))
                         } else {
-                            println(key2)
                         reduceRoads(key1, key1, key2, roads, 1)
                         }
                     }
                 }
             }
-            i += 1
-            println(i)
         }
     }
-    println("reducedRoads")
-    println(reducedRoads)
-
-    
-    println()
-    println("roads / pumps")
-    println(roads)
-    println(pumps)
 
     // #1.4 iterate redursiv through cave, starting from A, stopping at all pumps visited or time out
     var pumpsRed = mutableMapOf<String, Int>()
@@ -143,19 +122,20 @@ fun aocDay2216(part: Int = 1): Int {
         }
     }
 
-    println("pumpsRed")
-    println (pumpsRed)
-
-
     val startCave = "AA"
-    val timeLimit = 30
+    var timeLimit = 30
     var result = 0
     var pressure = 0
 
     if (part == 1) {
         result = move2(startCave, timeLimit+1, pumpsRed, pressure, startCave)
-    }  
-
+    }  else {
+        // #2 part 2
+        // #2.1 separate reduced pump list to elefant pumps and your pumps
+        // #2.2 calculate your and the elefants contribtution and take the max value
+        timeLimit = 26
+        result = 0
+    }
 
     return result
 }   
@@ -169,8 +149,8 @@ fun main() {
     var solution1 = aocDay2216(1)
     println("   the most pressure you can release is $solution1")
 
-    //var solution2 = aocDay2216(2)
-    //println("   the longest hike is $solution2 steps long")
+    var solution2 = aocDay2216(2)
+    println("   the most pressure the elephant and you can release is $solution2")
 
     t1 = System.currentTimeMillis() - t1
     println("puzzle solved in ${t1} ms")
