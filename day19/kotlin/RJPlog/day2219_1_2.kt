@@ -4,167 +4,115 @@
 import java.io.File
 import kotlin.math.*
 
-var roads = mutableMapOf<String, Int>()
-var reducedRoads = mutableMapOf<String,Int>()
-var pumps = mutableMapOf<String, Int>()
+fun mine(localBlue: MutableMap<String, Int>, timeLeft: Int): Int {
 
-// reduce map of roads to all connetections between pumps/pumps and startpoint/pumps
-fun reduceRoads(key1: String, intKey: String, key2: String, roadsLocal: MutableMap<String, Int>, count: Int) {
+    var lB = mutableMapOf<String, Int>()
+    lB.putAll(localBlue)
+    // #1.3 harvest 
+    lB.put("ore", lB.getValue("ore") + lB.getValue("oreRob"))
+    lB.put("clay", lB.getValue("clay") + lB.getValue("clayRob"))
+    lB.put("obsidian", lB.getValue("obsidian") + lB.getValue("obsRob"))
+    lB.put("geode", lB.getValue("geode") + lB.getValue("geoRob"))
+    
+    //println("mining started with ($timeLeft):")
+    //println("${" ".repeat(24-timeLeft)+lB}")
 
-    if (roads.containsKey(intKey+"-"+key2) || roads.containsKey(key2+"-"+intKey)) {
-        if (reducedRoads.contains(key1+"-"+key2)) {
-            reducedRoads.put(key1+"-"+key2, min(count, reducedRoads.getValue(key1+"-"+key2)))
-        } else {
-            reducedRoads.put(key1+"-"+key2, count)
-        }
-        if (reducedRoads.contains(key2+"-"+key1)) {
-            reducedRoads.put(key2+"-"+key1, min(count, reducedRoads.getValue(key2+"-"+key1)))
-        } else {
-            reducedRoads.put(key2+"-"+key1, count)
-        }
+    var geodes = mutableListOf(0)
+    if (timeLeft == 1) {
+        geodes.add(lB.getValue("geode"))
     } else {
-        // deal with pumps more than one 
-        for ((key,value) in roadsLocal) {
-            var rLNew = mutableMapOf<String, Int>()
-            if (key.take(2) == intKey) {
-                var key1New = key.takeLast(2)
-                rLNew.putAll(roadsLocal)
-                rLNew.remove(key)
-                reduceRoads(key1, key1New, key2, rLNew, count + 1)
-            } else if (key.takeLast(2) == intKey) {
-                var key1New = key.take(2)
-                rLNew.putAll(roadsLocal)
-                rLNew.remove(key)
-                reduceRoads(key1, key1New, key2, rLNew, count + 1)
-            }
+        // #1.4 iterate over time
+        // #1.4.1 start next run and by oreRob
+        if (lB.getValue("ore") >= lB.getValue("oreRobCost_O")) {
+            var lBNew = mutableMapOf<String, Int>() 
+            lBNew.putAll(lB)           
+            lBNew.put("oreRob", lBNew.getValue("oreRob")+1)
+            lBNew.put("ore", lBNew.getValue("ore")-lBNew.getValue("oreRobCost_O"))
+            geodes.add(mine(lBNew, timeLeft-1))
         }
+            
+        // #1.4.2 start next run and by clayRob
+        if (lB.getValue("ore") >= lB.getValue("clayRobCost_O")) {
+            var lBNew = mutableMapOf<String, Int>() 
+            lBNew.putAll(lB)           
+            lBNew.put("clayRob", lBNew.getValue("clayRob")+1)
+            lBNew.put("ore", lBNew.getValue("ore")-lBNew.getValue("clayRobCost_O"))
+            geodes.add(mine(lBNew, timeLeft-1))
+        }       
+        // #1.4.3 start next run and by obsRob
+        if (lB.getValue("ore") >= lB.getValue("obsRobCost_O") && lB.getValue("clay") >= lB.getValue("obsRobCost_C")) {
+            var lBNew = mutableMapOf<String, Int>() 
+            lBNew.putAll(lB)           
+            lBNew.put("obsRob", lBNew.getValue("obsRob")+1)
+            lBNew.put("ore", lBNew.getValue("ore")-lBNew.getValue("obsRobCost_O"))
+            lBNew.put("clay", lBNew.getValue("clay")-lBNew.getValue("obsRobCost_C"))
+            geodes.add(mine(lBNew, timeLeft-1))
+        }  
+        // #1.4.4. start next run and by geoRob
+        if (lB.getValue("ore") >= lB.getValue("geoRobCost_O") && lB.getValue("obsidian") >= lB.getValue("geoRobCost_Ob")) {
+            var lBNew = mutableMapOf<String, Int>() 
+            lBNew.putAll(lB)           
+            lBNew.put("geoRob", lBNew.getValue("geoRob")+1)
+            lBNew.put("ore", lBNew.getValue("ore")-lBNew.getValue("geoRobCost_O"))
+            lBNew.put("obsidian", lBNew.getValue("obsidian")-lBNew.getValue("geoRobCost_Ob"))
+            geodes.add(mine(lBNew, timeLeft-1))
+        }  
+        // #1.4.5. start next run and by nothing
+        var lBNew = mutableMapOf<String, Int>() 
+        lBNew.putAll(lB)           
+        geodes.add(mine(lBNew, timeLeft-1))
     }
-}
 
-fun move2(currCave: String, tL: Int, pumpsInt: MutableMap<String, Int>, pr: Int, path: String): Int {
-    var pressure = mutableListOf(0)
-    var tLNew = tL-1
-    var pressureContribution = pr
-    if (pumpsInt.getValue(currCave) > 0) {
-        tLNew = tL-1
-        pressureContribution += pumpsInt.getValue(currCave) * max((tLNew),0)
-    } 
-
-    var pumpsLocal = mutableMapOf<String, Int>()
-    pumpsLocal.putAll(pumpsInt)
-    pumpsLocal.remove(currCave)
-
-    if (tL <= 0 || pumpsLocal.values.sum() == 0) {
-        pressure.add(pressureContribution)
-    } else {
-        for ((key,value) in pumpsLocal) {
-            if (value > 0 ) {
-                pressure.add(move2(key, tLNew-reducedRoads.getValue(currCave+"-"+key), pumpsLocal, pressureContribution, path + "-" + key))
-            }
-        }
-    }
-    pressure.sortDescending()
-    return pressure[0]
+    geodes.sortDescending()
+    return geodes[0]
 }
 
 fun aocDay2219(part: Int = 1): Int {
-    // #1 prepare map of roads
-    // #1.1.1 extract all connections
-    // #1.1.2 extract all flow rates
-    var junctions = mutableListOf<String>()
-    File("day2219_puzzle_input.txt").forEachLine {
-        val junctOne = it.substringAfter("Valve ").substringBefore(" has")
-        var possJunctions = it.replace("valve ", "valves ")
-        possJunctions.substringAfter("to valves ").split(", ").forEach {
-            val junctTwo = it
-            junctions.add(listOf(junctOne, junctTwo).sorted().joinToString("-"))
-        }
-        val flowRate = it.substringAfter("rate=").substringBefore(";").toInt()
-        //if (flowRate > 0) pumps.put(junctOne, flowRate)
-        pumps.put(junctOne, flowRate)
-    }
-    junctions = junctions.distinct().sorted().toMutableList()
-    var allRoads = mutableMapOf<String, Int>()
-    junctions.forEach{
-        allRoads.put(it, 1)
-    }
 
-    // #1.2 make roadmap global
-        roads.putAll(allRoads)
-
-    // guess it makes sence to sort out sinlge connections upfront?    
-
-    // #1.3 determine shortest ways from entry to pumps with positive flow rate and from each pump to pump
-    for ((key1,value1) in pumps) {
-        if (key1 == "AA" || value1 > 0) {
-            for ((key2,value2) in pumps) {
-                if (key2 == "AA" || value2 > 0) {
-                    if ((key1 != key2)) {
-
-                        if (reducedRoads.containsKey(key2+"-"+key1)) {
-                            reducedRoads.put(key1+"-"+key2, reducedRoads.getValue(key2+"-"+key1))
-                        } else if (reducedRoads.containsKey(key1+"-"+key2)) {
-                            reducedRoads.put(key2+"-"+key1, reducedRoads.getValue(key1+"-"+key2))
-                        } else {
-                        reduceRoads(key1, key1, key2, roads, 1)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // #1.4 iterate redursiv through cave, starting from A, stopping at all pumps visited or time out
-    var pumpsRed = mutableMapOf<String, Int>()
-    for ((key,value) in pumps) {
-        if (value > 0 || key == "AA") {
-            pumpsRed.put(key,value)
-        }
-    }
-
-    val startCave = "AA"
-    var timeLimit = 30
     var result = 0
-    var pressure = 0
-    var resultMax = 0
+    var timeLimit = 24
+    var bluePrint = mutableMapOf<String, Int>()
 
-    if (part == 1) {
-        result = move2(startCave, timeLimit+1, pumpsRed, pressure, startCave)
-    }  else {
-        // #2 part 2
+    File("day2219_puzzle_input.txt").forEachLine {
+        // #1.1 extract necessary info out ouf blueprint
+        var id = it.substringAfter("Blueprint ").substringBefore(":").toInt()
+        bluePrint.put("ID", id)
+        bluePrint.put("oreRob", 1)
+        bluePrint.put("clayRob", 0)
+        bluePrint.put("obsRob", 0)
+        bluePrint.put("geoRob", 0)
 
-        timeLimit = 26
+        var oreRobCost_O = it.split(" ")[6].toInt()
+        var clayRobCost_O = it.split(" ")[12].toInt()
+        var obsRobCost_O = it.split(" ")[18].toInt()
+        var obsRobCost_C = it.split(" ")[21].toInt()
+        var geoRobCost_O = it.split(" ")[27].toInt()
+        var geoRobCost_Ob = it.split(" ")[30].toInt()
+
+        bluePrint.put("oreRobCost_O", oreRobCost_O)
+        bluePrint.put("clayRobCost_O", clayRobCost_O)
+        bluePrint.put("obsRobCost_O", obsRobCost_O)
+        bluePrint.put("obsRobCost_C", obsRobCost_C)
+        bluePrint.put("geoRobCost_O", geoRobCost_O)
+        bluePrint.put("geoRobCost_Ob", geoRobCost_Ob)
+
+        bluePrint.put("ore", 0)
+        bluePrint.put("clay", 0)
+        bluePrint.put("obsidian", 0)
+        bluePrint.put("geode", 0)
+
+
+        // #1.2 run blueprint and calculate max geodes to be produced
+        var geodes = mine(bluePrint, timeLimit)
         println()
-        println("---------part2------------")
-        pumpsRed.remove("AA")
+        println("----next blueprint-----------")
+        println()
 
-        // #2.1 separate reduced pump list to elefant pumps and your pumps
-        // #2.2 calculate your and the elefants contribtution and take the max value
-        for (i in 0..2.toDouble().pow(pumpsRed.size).toInt()) {
-            var pumpsMe = mutableMapOf<String, Int>()
-            pumpsMe.put("AA", 0)
-            var pumpsEl = mutableMapOf<String, Int>()
-            pumpsEl.put("AA", 0)
-            var shedule = i.toString(2).padStart(pumpsRed.size,'0')
-            var j = 0
-            println(shedule)
-            println(pumpsRed)
-            for ((key, value) in pumpsRed) {
-                if(shedule[j] == '1') {
-                    pumpsMe.put(key, value)
-                } else {
-                    pumpsEl.put(key, value)
-                }
-                j += 1
-            }
-            result = move2(startCave, timeLimit+1, pumpsMe, pressure, startCave) + move2(startCave, timeLimit+1, pumpsEl, pressure, startCave)
- 
-            if (resultMax < result) resultMax = result
-            println("$i:  $pumpsMe $pumpsEl -> $result -> $resultMax")
-        }
+        // determine quality level
+        result += id * geodes
     }
 
-    return resultMax
+    return result
 }   
 
 fun main() {
