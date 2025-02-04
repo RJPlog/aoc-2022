@@ -16,7 +16,7 @@ var geoRobCost_Ob = 0
 
 fun mine(localBlue: MutableMap<String, Int>, timeLeft: Int): Int {
 
-    if (runCount == 10000000) return 0
+    if (runCount == 4000000) return 0
 
     var lB = mutableMapOf<String, Int>()
     lB.putAll(localBlue)
