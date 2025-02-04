@@ -14,90 +14,93 @@ var obsRobCost_C = 0
 var geoRobCost_O = 0
 var geoRobCost_Ob = 0
 
-fun mine(localBlue: MutableMap<String, Int>, timeLeft: Int): Int {
+fun mine(localBlue: String, timeLeft: Int): Int {
 
-    if (runCount == 4000000) return 0
-
-    var lB = mutableMapOf<String, Int>()
-    lB.putAll(localBlue)
+    //if (runCount == 4000000) return 0
 
     //println("mining started with ($timeLeft):")
     //println("${" ".repeat(24-timeLeft)+lB}")
 
+    var lB = localBlue.split(" ").map {it.toInt()}
+
+
     var geodes = mutableListOf(0)
     if (timeLeft == 0) {
-        geodes.add(lB.getValue("geode"))
-        if (lB.getValue("geode") > geodesMax) geodesMax = lB.getValue("geode")
+        geodes.add(lB[7])
+        if (lB[7] > geodesMax) geodesMax = lB[7]
         runCount += 1
     } else {
         // #1.4 iterate over time
         // #1.4.1. start next run and by geoRob
-        if (lB.getValue("ore") >= geoRobCost_O && lB.getValue("obsidian") >= geoRobCost_Ob) {
-            var lBNew = mutableMapOf<String, Int>() 
-            lBNew.putAll(lB) 
+        if (lB[4]>= geoRobCost_O && lB[6] >= geoRobCost_Ob) {
+ 
             // #1.3 harvest 
-            lBNew.put("ore", lBNew.getValue("ore") + lBNew.getValue("oreRob"))
-            lBNew.put("clay", lBNew.getValue("clay") + lBNew.getValue("clayRob"))
-            lBNew.put("obsidian", lBNew.getValue("obsidian") + lBNew.getValue("obsRob"))
-            lBNew.put("geode", lBNew.getValue("geode") + lBNew.getValue("geoRob"))
+            var oreNew = lB[4] + lB[0]
+            var clayNew = lB[5] + lB[1]
+            var obsidianNew = lB[6] + lB[2]
+            var geodeNew = lB[7] + lB[3]
               
-            lBNew.put("geoRob", lBNew.getValue("geoRob")+1)
-            lBNew.put("ore", lBNew.getValue("ore") - geoRobCost_O)
-            lBNew.put("obsidian", lBNew.getValue("obsidian") - geoRobCost_Ob)
+            var geoRobNew = lB[3] + 1
+            oreNew -= geoRobCost_O
+            obsidianNew -= geoRobCost_Ob
+            var lBNew = lB[0].toString() + " " + lB[1].toString() + " "  + lB[2].toString() + " " + geoRobNew.toString() + " " + oreNew.toString() + " " + clayNew.toString() + " " + obsidianNew.toString() + " " + geodeNew.toString()
             geodes.add(mine(lBNew, timeLeft-1))
         }  
         // #1.4.2 start next run and by obsRob
-        if (lB.getValue("ore") >= obsRobCost_O && lB.getValue("clay") >= obsRobCost_C) {
-            var lBNew = mutableMapOf<String, Int>() 
-            lBNew.putAll(lB)    
+        if (lB[4] >= obsRobCost_O && lB[5] >= obsRobCost_C) {
+    
             // #1.3 harvest 
-            lBNew.put("ore", lBNew.getValue("ore") + lBNew.getValue("oreRob"))
-            lBNew.put("clay", lBNew.getValue("clay") + lBNew.getValue("clayRob"))
-            lBNew.put("obsidian", lBNew.getValue("obsidian") + lBNew.getValue("obsRob"))
-            lBNew.put("geode", lBNew.getValue("geode") + lBNew.getValue("geoRob"))
+            var oreNew = lB[4] + lB[0]
+            var clayNew = lB[5] + lB[1]
+            var obsidianNew = lB[6] + lB[2]
+            var geodeNew = lB[7] + lB[3]          
            
-            lBNew.put("obsRob", lBNew.getValue("obsRob")+1)
-            lBNew.put("ore", lBNew.getValue("ore") - obsRobCost_O)
-            lBNew.put("clay", lBNew.getValue("clay") - obsRobCost_C)
+            var obsRobNew = lB[2] + 1
+            oreNew -=  obsRobCost_O
+            clayNew -= obsRobCost_C
+            var lBNew = lB[0].toString() + " " + lB[1].toString() + " "  + obsRobNew.toString() + " " + lB[3].toString() + " " + oreNew.toString() + " " + clayNew.toString() + " " + obsidianNew.toString() + " " + geodeNew.toString()
+            
             geodes.add(mine(lBNew, timeLeft-1))
         } 
         // #1.4.3 start next run and by clayRob
-        if (lB.getValue("ore") >= clayRobCost_O) {
-            var lBNew = mutableMapOf<String, Int>() 
-            lBNew.putAll(lB)    
+        if (lB[4] >= clayRobCost_O) {
+
             // #1.3 harvest 
-            lBNew.put("ore", lBNew.getValue("ore") + lBNew.getValue("oreRob"))
-            lBNew.put("clay", lBNew.getValue("clay") + lBNew.getValue("clayRob"))
-            lBNew.put("obsidian", lBNew.getValue("obsidian") + lBNew.getValue("obsRob"))
-            lBNew.put("geode", lBNew.getValue("geode") + lBNew.getValue("geoRob"))
+            var oreNew = lB[4] + lB[0]
+            var clayNew = lB[5] + lB[1]
+            var obsidianNew = lB[6] + lB[2]
+            var geodeNew = lB[7] + lB[3]
            
-            lBNew.put("clayRob", lBNew.getValue("clayRob")+1)
-            lBNew.put("ore", lBNew.getValue("ore") - clayRobCost_O)
+            var clayRobNew = lB[1] + 1
+            oreNew -= clayRobCost_O
+            var lBNew = lB[0].toString() + " " + clayRobNew.toString() + " "  + lB[2].toString() + " " + lB[3].toString() + " " + oreNew.toString() + " " + clayNew.toString() + " " + obsidianNew.toString() + " " + geodeNew.toString()
+            
             geodes.add(mine(lBNew, timeLeft-1))
         } 
         // #1.4.4 start next run and by oreRob
-        if (lB.getValue("ore") >= oreRobCost_O) {
-            var lBNew = mutableMapOf<String, Int>() 
-            lBNew.putAll(lB)   
+        if (lB[4] >= oreRobCost_O) {
+
             // #1.3 harvest 
-            lBNew.put("ore", lBNew.getValue("ore") + lBNew.getValue("oreRob"))
-            lBNew.put("clay", lBNew.getValue("clay") + lBNew.getValue("clayRob"))
-            lBNew.put("obsidian", lBNew.getValue("obsidian") + lBNew.getValue("obsRob"))
-            lBNew.put("geode", lBNew.getValue("geode") + lBNew.getValue("geoRob"))
+            var oreNew = lB[4] + lB[0]
+            var clayNew = lB[5] + lB[1]
+            var obsidianNew = lB[6] + lB[2]
+            var geodeNew = lB[7] + lB[3]    
+
+            var oreRobNew = lB[0] + 1
+            oreNew -= oreRobCost_O
+            var lBNew = oreRobNew.toString() + " " + lB[1].toString() + " "  + lB[2].toString() + " " + lB[3].toString() + " " + oreNew.toString() + " " + clayNew.toString() + " " + obsidianNew.toString() + " " + geodeNew.toString()
             
-            lBNew.put("oreRob", lBNew.getValue("oreRob")+1)
-            lBNew.put("ore", lBNew.getValue("ore") - oreRobCost_O)
             geodes.add(mine(lBNew, timeLeft-1))
         }
-        // #1.4.5. start next run and by nothing
-        var lBNew = mutableMapOf<String, Int>() 
-        lBNew.putAll(lB) 
+        // #1.4.5. start next run and by nothing 
         // #1.3 harvest 
-        lBNew.put("ore", lBNew.getValue("ore") + lBNew.getValue("oreRob"))
-        lBNew.put("clay", lBNew.getValue("clay") + lBNew.getValue("clayRob"))
-        lBNew.put("obsidian", lBNew.getValue("obsidian") + lBNew.getValue("obsRob"))
-        lBNew.put("geode", lBNew.getValue("geode") + lBNew.getValue("geoRob"))
+            var oreNew = lB[4] + lB[0]
+            var clayNew = lB[5] + lB[1]
+            var obsidianNew = lB[6] + lB[2]
+            var geodeNew = lB[7] + lB[3]   
               
+            var lBNew = lB[0].toString() + " " + lB[1].toString() + " "  + lB[2].toString() + " " + lB[3].toString() + " " + oreNew.toString() + " " + clayNew.toString() + " " + obsidianNew.toString() + " " + geodeNew.toString()
+            
         geodes.add(mine(lBNew, timeLeft-1))
     }
 
@@ -108,7 +111,8 @@ fun mine(localBlue: MutableMap<String, Int>, timeLeft: Int): Int {
 fun aocDay2219(part: Int = 1): Int {
 
     var result = 0
-    var timeLimit = 24
+    var timeLimit = 22
+
     var bluePrint = mutableMapOf<String, Int>()
 
     var id = 1
@@ -118,10 +122,10 @@ fun aocDay2219(part: Int = 1): Int {
         runCount = 0
 
         // #1.1 extract necessary info out ouf blueprint
-        bluePrint.put("oreRob", 1)
-        bluePrint.put("clayRob", 0)
-        bluePrint.put("obsRob", 0)
-        bluePrint.put("geoRob", 0)
+        var oreRob = 1
+        var clayRob = 0
+        var obsRob = 0
+        var geoRob = 0
 
         oreRobCost_O = it.split(" ")[6].toInt()
         clayRobCost_O = it.split(" ")[12].toInt()
@@ -130,10 +134,12 @@ fun aocDay2219(part: Int = 1): Int {
         geoRobCost_O = it.split(" ")[27].toInt()
         geoRobCost_Ob = it.split(" ")[30].toInt()
 
-        bluePrint.put("ore", 0)
-        bluePrint.put("clay", 0)
-        bluePrint.put("obsidian", 0)
-        bluePrint.put("geode", 0)
+        var ore = 0
+        var clay = 0
+        var obsidian = 0
+        var geode = 0
+
+        var bluePrint = oreRob.toString() + " " + clayRob.toInt() + " " + obsRob.toInt() + " " + geoRob.toInt() + " " + ore.toInt() + " " + clay.toInt() + " " + obsidian.toInt() + " " +  geode.toInt()
 
         // #1.2 run blueprint and calculate max geodes to be produced
         var geodes = mine(bluePrint, timeLimit)
@@ -163,4 +169,4 @@ fun main() {
 
     t1 = System.currentTimeMillis() - t1
     println("puzzle solved in ${t1} ms")
-}
+}  
