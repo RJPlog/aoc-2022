@@ -16,7 +16,9 @@ var geoRobCost_Ob = 0
 
 fun mine(localBlue: String, timeLeft: Int): Int {
 
-    //if (runCount == 4000000) return 0
+    //if (runCount == 40000000) return 0
+
+
 
     //println("mining started with ($timeLeft):")
     //println("${" ".repeat(24-timeLeft)+lB}")
@@ -24,10 +26,17 @@ fun mine(localBlue: String, timeLeft: Int): Int {
     var lB = localBlue.split(" ").map {it.toInt()}
 
 
+    // guess this needs a lot of fine tuning //
+    if ((timeLeft < 15 && lB[1] <= 0) || (timeLeft < 5 && lB[2] <= 0) || (timeLeft < 5 && lB[3] <= 0)) {return 0}
+    // guess this needs a lot of fine tuning
+
     var geodes = mutableListOf(0)
     if (timeLeft == 0) {
         geodes.add(lB[7])
-        if (lB[7] > geodesMax) geodesMax = lB[7]
+        if (lB[7] > geodesMax) {
+            geodesMax = lB[7]
+            println(geodesMax) 
+        }
         runCount += 1
     } else {
         // #1.4 iterate over time
@@ -45,7 +54,7 @@ fun mine(localBlue: String, timeLeft: Int): Int {
             obsidianNew -= geoRobCost_Ob
             var lBNew = lB[0].toString() + " " + lB[1].toString() + " "  + lB[2].toString() + " " + geoRobNew.toString() + " " + oreNew.toString() + " " + clayNew.toString() + " " + obsidianNew.toString() + " " + geodeNew.toString()
             geodes.add(mine(lBNew, timeLeft-1))
-        }  
+        } else {  
         // #1.4.2 start next run and by obsRob
         if (lB[4] >= obsRobCost_O && lB[5] >= obsRobCost_C) {
     
@@ -102,6 +111,7 @@ fun mine(localBlue: String, timeLeft: Int): Int {
             var lBNew = lB[0].toString() + " " + lB[1].toString() + " "  + lB[2].toString() + " " + lB[3].toString() + " " + oreNew.toString() + " " + clayNew.toString() + " " + obsidianNew.toString() + " " + geodeNew.toString()
             
         geodes.add(mine(lBNew, timeLeft-1))
+        }
     }
 
     geodes.sortDescending()
@@ -111,9 +121,7 @@ fun mine(localBlue: String, timeLeft: Int): Int {
 fun aocDay2219(part: Int = 1): Int {
 
     var result = 0
-    var timeLimit = 22
-
-    var bluePrint = mutableMapOf<String, Int>()
+    var timeLimit = 24
 
     var id = 1
     File("day2219_puzzle_input.txt").forEachLine {
