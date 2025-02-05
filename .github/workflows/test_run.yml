@@ -1,0 +1,20 @@
+name: test_run
+run-name: ${{ github.actor }} is testing out GitHub Actions, this time how fast the standard runners are and if there is a time out 🚀
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Checkout_2_different_repositories:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout first year
+        uses: actions/checkout@v4
+
+      - name: Build and Run SW out of different repos's
+        run: |
+          cd day19
+          cd kotlin
+          cd RJPlog
+          kotlinc day2219_1_2.kt -include-runtime -d day2219_1_2.jar && java -jar -Xss515m day2219_1_2.jar
