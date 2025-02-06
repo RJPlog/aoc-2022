@@ -18,25 +18,23 @@ fun mine(localBlue: String, timeLeft: Int): Int {
 
     //if (runCount == 40000000) return 0
 
-
-
     //println("mining started with ($timeLeft):")
     //println("${" ".repeat(24-timeLeft)+lB}")
 
     var lB = localBlue.split(" ").map {it.toInt()}
 
-
-    // guess this needs a lot of fine tuning //
-    if ((timeLeft < 15 && lB[1] <= 0) || (timeLeft < 5 && lB[2] <= 0) || (timeLeft < 5 && lB[3] <= 0)) {return 0}
-    // guess this needs a lot of fine tuning
+    if ((timeLeft < 10 && lB[1] <= 0) || (timeLeft < 5 && lB[2] <= 0)) {return 0}
+    if (lB[1] > 8) return 0
+    if (lB[0] > 5) return 0
+    //if (timeLeft < 10 && lB[0] == 0 && lB[1] == 0) return 0
 
     var geodes = mutableListOf(0)
     if (timeLeft == 0) {
         geodes.add(lB[7])
         if (lB[7] > geodesMax) {
-            geodesMax = lB[7]
-            println(geodesMax) 
-        }
+            geodesMax = lB[7] 
+            println(geodesMax)
+            }
         runCount += 1
     } else {
         // #1.4 iterate over time
@@ -153,10 +151,11 @@ fun aocDay2219(part: Int = 1): Int {
         var geodes = mine(bluePrint, timeLimit)
         println()
         println("----next blueprint-----------")
-        println()
+
 
         // determine quality level
         result += id * geodes
+        println("$id: geodes $geodes, $result")
         id += 1
     }
 
